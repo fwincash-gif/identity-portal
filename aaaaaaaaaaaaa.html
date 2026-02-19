@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Admin | National Identity Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .sidebar { background: #002b21; height: 100vh; position: sticky; top: 0; }
+        .nav-item { border-radius: 12px; margin-bottom: 8px; transition: 0.3s; color: #94a3b8; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: #fff; border-left: 4px solid #10b981; }
+        .stat-card { border-top: 4px solid #006a4e; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex">
+
+    <!-- SIDEBAR -->
+    <aside class="w-72 sidebar text-white p-6 hidden lg:flex flex-col shadow-2xl">
+        <div class="flex items-center gap-4 mb-10 border-b border-white/10 pb-8">
+            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Government_Seal_of_Bangladesh.svg/1200px-Government_Seal_of_Bangladesh.svg.png" class="w-7 brightness-0 invert">
+            </div>
+            <div>
+                <h1 class="text-sm font-black uppercase tracking-widest leading-none">Admin Hub</h1>
+                <p class="text-[8px] font-bold text-emerald-400 uppercase tracking-widest mt-1">National Registry</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto no-scrollbar">
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 ml-4">Main Menu</p>
+            <a href="#" class="nav-item active flex items-center gap-4 p-4 text-sm font-bold"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="#" class="nav-item flex items-center gap-4 p-4 text-sm font-bold"><i class="fa-solid fa-users-viewfinder"></i> Pending Queue</a>
+            <a href="#" class="nav-item flex items-center gap-4 p-4 text-sm font-bold"><i class="fa-solid fa-address-card"></i> Active Database</a>
+            
+            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest my-6 ml-4">Site Control</p>
+            <a href="#" class="nav-item flex items-center gap-4 p-4 text-sm font-bold"><i class="fa-solid fa-wallet"></i> Payment Gateway</a>
+            <a href="#" class="nav-item flex items-center gap-4 p-4 text-sm font-bold"><i class="fa-solid fa-bullhorn"></i> Global Ticker</a>
+            <a href="#" class="nav-item flex items-center gap-4 p-4 text-sm font-bold"><i class="fa-solid fa-shield-halved"></i> Security Logs</a>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-white/10 flex flex-col gap-4">
+            <div class="flex items-center gap-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center font-black text-xs text-white">M</div>
+                <div class="text-left"><p class="text-[10px] font-black uppercase">Master Admin</p><p class="text-[8px] text-emerald-400 font-bold uppercase">Online</p></div>
+            </div>
+            <button class="w-full py-3 bg-red-500/10 text-red-400 rounded-xl text-[10px] font-black hover:bg-red-500 hover:text-white transition uppercase tracking-widest">Logout System</button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto custom-scroll h-screen">
+        
+        <!-- HEADER -->
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h2 class="text-3xl font-black text-slate-800 tracking-tighter">System Overview</h2>
+                <p class="text-slate-500 font-medium">Managing National Registry & Card Approvals</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-200 text-sm font-bold text-slate-600">
+                    <i class="fa-solid fa-calendar-day mr-2 text-emerald-600"></i> Feb 19, 2026
+                </div>
+                <button class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition">
+                    <i class="fa-solid fa-bell"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- ANALYTICS KPI -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm stat-card">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Total Members</p>
+                <h3 class="text-3xl font-black text-slate-800" id="totalM">2,452,904</h3>
+                <p class="text-emerald-500 text-[10px] font-bold mt-2"><i class="fa-solid fa-arrow-trend-up"></i> 1.2% Today</p>
+            </div>
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-t-4 border-amber-500">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Pending Verify</p>
+                <h3 class="text-3xl font-black text-amber-600">4,120</h3>
+                <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Awaiting review</p>
+            </div>
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-t-4 border-blue-500">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Treasury Inflow</p>
+                <h3 class="text-3xl font-black text-blue-600">৳ 85.4M</h3>
+                <p class="text-blue-500 text-[10px] font-bold mt-2 uppercase italic">Live Revenue</p>
+            </div>
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-t-4 border-red-500">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">Banned Users</p>
+                <h3 class="text-3xl font-black text-red-600">128</h3>
+                <p class="text-red-500 text-[10px] font-bold mt-2 uppercase underline">Fraud logs</p>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-12 gap-8">
+            
+            <!-- PENDING TABLE (Left 8 Columns) -->
+            <div class="lg:col-span-8 bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden">
+                <div class="p-8 border-b bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="font-black text-slate-800 uppercase tracking-tighter">Citizen Verification Queue</h3>
+                    <div class="flex gap-2">
+                        <button class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg shadow-emerald-500/20">Verify All</button>
+                        <button class="p-2 bg-white border rounded-xl"><i class="fa-solid fa-filter text-slate-400"></i></button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b">
+                            <tr>
+                                <th class="px-8 py-5">Full Applicant Info</th>
+                                <th class="px-8 py-5">Payment / TrxID</th>
+                                <th class="px-8 py-5">Set Hub</th>
+                                <th class="px-8 py-5 text-right">Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTable" class="divide-y divide-slate-100">
+                            <!-- Data injected from user portal -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SITE CONTROLS (Right 4 Columns) -->
+            <div class="lg:col-span-4 space-y-8">
+                
+                <!-- Gateway Update -->
+                <div class="bg-white p-8 rounded-[3rem] shadow-xl border-t-4 border-emerald-600">
+                    <h4 class="font-black text-slate-800 mb-6 flex items-center gap-3 uppercase tracking-tighter">
+                        <i class="fa-solid fa-wallet text-emerald-600"></i> Treasury Control
+                    </h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Bkash Number</label>
+                            <input type="text" id="setBk" value="01700-000000" class="w-full p-4 bg-slate-50 border rounded-2xl font-black text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Nagad Number</label>
+                            <input type="text" id="setNg" value="01900-000000" class="w-full p-4 bg-slate-50 border rounded-2xl font-black text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <button onclick="saveSiteConfig()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-black transition">Update Numbers</button>
+                    </div>
+                </div>
+
+                <!-- Ticker Update -->
+                <div class="bg-white p-8 rounded-[3rem] shadow-xl border-t-4 border-blue-500">
+                    <h4 class="font-black text-slate-800 mb-6 flex items-center gap-3 uppercase tracking-tighter">
+                        <i class="fa-solid fa-bullhorn text-blue-500"></i> Live Ticker
+                    </h4>
+                    <div class="space-y-4">
+                        <textarea id="setTicker" class="w-full p-4 bg-slate-50 border rounded-2xl text-[11px] font-bold h-32 leading-relaxed outline-none focus:ring-2 focus:ring-blue-500">জরুরি ঘোষণা: ডিজিটাল ফ্যামিলি কার্ড আবেদনের জন্য সঠিক তথ্য দিন। কার্ড আপনার নিকটস্থ পোস্ট অফিসে পাঠানো হবে।</textarea>
+                        <button onclick="saveSiteConfig()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-blue-700 transition">Push Live News</button>
+                    </div>
+                </div>
+
+                <!-- Server Info -->
+                <div class="bg-slate-900 p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden">
+                    <i class="fa-solid fa-shield-check absolute -right-4 -bottom-4 text-8xl text-white opacity-5"></i>
+                    <h5 class="text-xs font-black uppercase tracking-widest mb-4">Encryption Status</h5>
+                    <div class="flex items-center gap-3 text-emerald-400 mb-6">
+                        <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span class="text-[10px] font-bold">256-BIT SSL ACTIVE</span>
+                    </div>
+                    <p class="text-[9px] text-slate-400 font-medium leading-relaxed uppercase tracking-widest">Automatic backup performed<br>Every 15 minutes.</p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Load data from User portal database (LocalStorage)
+        function loadRegistry() {
+            const registry = JSON.parse(localStorage.getItem('bd_bnp_registry') || '[]');
+            const container = document.getElementById('adminTable');
+            container.innerHTML = "";
+
+            if(registry.length === 0) {
+                container.innerHTML = "<tr><td colspan='4' class='p-10 text-center text-slate-400 font-black italic uppercase'>Registry is currently empty</td></tr>";
+                return;
+            }
+
+            registry.forEach((user, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 transition";
+                tr.innerHTML = `
+                    <td class="px-8 py-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border"><img src="https://ui-avatars.com/api/?name=${user.name}&background=10b981&color=fff" class="w-full h-full"></div>
+                            <div>
+                                <p class="font-black text-slate-800 leading-none mb-1">${user.name}</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase">NID: ${user.nid}</p>
+                                <p class="text-[8px] text-emerald-600 font-black mt-2">WAITING FOR APPROVAL</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-8 py-6">
+                        <button onclick="alert('Viewing Payment Proof...')" class="block mb-2 text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-600 hover:text-white">VIEW PROOF</button>
+                        <span class="text-[9px] font-bold text-slate-500 uppercase bg-slate-100 px-2 py-1 rounded">TRXID: 8N7X2W...</span>
+                    </td>
+                    <td class="px-8 py-6">
+                        <div class="space-y-2">
+                            <input type="text" id="hub-${index}" placeholder="Post Office" class="w-full p-2 border rounded-lg text-[10px] font-bold outline-none focus:border-emerald-500">
+                            <input type="text" id="zilla-${index}" placeholder="District" class="w-full p-2 border rounded-lg text-[10px] font-bold outline-none focus:border-emerald-500">
+                        </div>
+                    </td>
+                    <td class="px-8 py-6 text-right">
+                        <div class="flex gap-2 justify-end">
+                            <button onclick="approveAction('${user.name}', ${index})" class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-check"></i></button>
+                            <button onclick="banAction(${index})" class="w-10 h-10 bg-red-100 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-ban"></i></button>
+                        </div>
+                    </td>
+                `;
+                container.appendChild(tr);
+            });
+        }
+
+        function approveAction(name, idx) {
+            const hub = document.getElementById(`hub-${idx}`).value;
+            const zilla = document.getElementById(`zilla-${idx}`).value;
+
+            if(!hub || !zilla) return alert("CRITICAL: Assign Post Office and District before approval.");
+
+            alert(`APPROVED: ${name}\nHub: ${hub}\nDistrict: ${zilla}\n\nUser card is now unlocked and 30-day timer started.`);
+        }
+
+        function banAction(idx) {
+            if(confirm("Are you sure you want to ban this citizen? Access will be revoked immediately.")) {
+                alert("USER BANNED PERMANENTLY.");
+            }
+        }
+
+        function saveSiteConfig() {
+            const bk = document.getElementById('setBk').value;
+            const tk = document.getElementById('setTicker').value;
+            alert("SUCCESS: Global System Settings Pushed.\n\nSite updated with new Payment and Ticker info.");
+        }
+
+        window.onload = loadRegistry;
+
+        let tc = 2452904; setInterval(() => { tc++; document.getElementById('totalM').innerText = tc.toLocaleString(); }, 10000);
+    </script>
+</body>
+</html>

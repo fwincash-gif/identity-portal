@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Identity Portal | BNP Bangladesh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bnp-red: #f42a41; --bnp-green: #006a4e; --wa-green: #25D366; --tg-blue: #0088cc; }
+        body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; background-color: #f1f5f9; }
+
+        /* BNP CARD DESIGN - 1066x744 Ratio Logic */
+        .card-box {
+            width: 100%; max-width: 400px; height: 260px; border-radius: 15px; position: relative; color: white; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2); transition: 0.6s;
+        }
+        /* BNP Flag Colors */
+        .card-front { background: linear-gradient(180deg, var(--bnp-red) 50%, var(--bnp-green) 50%); }
+        .card-back { background: #1a1a1c; margin-top: 15px; }
+
+        /* Leadership Watermark */
+        .leadership-bg {
+            position: absolute; inset: 0; 
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_E3E_G3xT2YI7uG_F_W_8o8qO_H_L_B_XWQ&s');
+            background-size: cover; background-position: center; opacity: 0.25; mix-blend-mode: overlay; z-index: 1;
+        }
+
+        /* Lock/Blur Effect */
+        .card-locked { filter: blur(8px) grayscale(1); pointer-events: none; }
+        .lock-overlay { position: absolute; inset: 0; z-index: 50; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+
+        .user-pic { width: 90px; height: 110px; border: 3px solid white; border-radius: 5px; object-fit: cover; background: #eee; z-index: 10; }
+        .sig-on-card { width: 90px; height: 25px; background: rgba(255,255,255,0.9); border-radius: 4px; margin-top: 5px; z-index: 10; object-fit: contain; }
+
+        /* Draggable Buttons */
+        .floating-btn {
+            position: fixed; width: 60px; height: 60px; border-radius: 50%; color: white; display: flex; 
+            align-items: center; justify-content: center; font-size: 28px; cursor: grab; z-index: 9999; touch-action: none;
+        }
+        #wa-btn { background: var(--wa-green); bottom: 100px; right: 20px; }
+        #tg-btn { background: var(--tg-blue); bottom: 25px; right: 20px; }
+
+        #sig-canvas { border: 2px dashed #cbd5e1; background: #fff; cursor: crosshair; border-radius: 12px; }
+        .ticker-wrap { background: #fff; border-bottom: 2px solid #ddd; height: 40px; display: flex; align-items: center; overflow: hidden; }
+        .ticker-move { display: inline-block; white-space: nowrap; animation: tickerScroll 40s linear infinite; }
+        @keyframes tickerScroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
+        #payModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 8000; align-items: center; justify-content: center; padding: 15px; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- PAYMENT MODAL -->
+    <div id="payModal">
+        <div class="bg-[#e2e8f0] w-full max-w-md rounded-[3rem] p-10 shadow-2xl space-y-6 text-center border-4 border-white">
+            <h3 class="text-2xl font-black text-slate-800 italic uppercase">Treasury Gateway</h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-4 bg-white rounded-3xl border-2 border-pink-200">
+                    <div class="text-left leading-none"><p class="text-[10px] font-black text-pink-600 uppercase">Bkash</p><p id="bkN" class="text-xl font-black">01700000000</p></div>
+                    <button onclick="copyNum('bkN')" class="bg-[#d81b60] text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase">Copy</button>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-white rounded-3xl border-2 border-orange-200">
+                    <div class="text-left leading-none"><p class="text-[10px] font-black text-orange-600 uppercase">Nagad</p><p id="ngN" class="text-xl font-black">01900000000</p></div>
+                    <button onclick="copyNum('ngN')" class="bg-[#e65100] text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase">Copy</button>
+                </div>
+            </div>
+            <div class="p-4 bg-white/50 rounded-2xl border-2 border-dashed border-blue-300">
+                <p class="text-[10px] font-black text-blue-700 uppercase mb-2 italic">Upload Screenshot</p>
+                <input type="file" id="payShot" class="text-[10px] w-full font-bold">
+            </div>
+            <input type="text" id="trxID" placeholder="ENTER TRANSACTION ID" class="w-full p-4 border-2 rounded-2xl text-center font-black uppercase text-sm outline-none">
+            <button onclick="confirmPayment()" class="w-full bg-emerald-600 text-white py-5 rounded-[2.5rem] font-black uppercase tracking-widest text-lg shadow-xl hover:bg-black transition-all">Submit Payment</button>
+        </div>
+    </div>
+
+    <!-- DRAGGABLES -->
+    <div id="wa-btn" class="floating-btn" onmousedown="dragStart(event, 'wa-btn')" ontouchstart="dragStart(event, 'wa-btn')"><i class="fa-brands fa-whatsapp"></i></div>
+    <div id="tg-btn" class="floating-btn" onmousedown="dragStart(event, 'tg-btn')" ontouchstart="dragStart(event, 'tg-btn')"><i class="fa-brands fa-telegram"></i></div>
+
+    <!-- HEADER -->
+    <header class="bg-white border-b-4 border-[#006a4e] p-4 sticky top-0 z-[100] shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Government_Seal_of_Bangladesh.svg/1200px-Government_Seal_of_Bangladesh.svg.png" class="w-12">
+                <div>
+                    <h1 class="text-xl font-black text-[#006a4e]" id="l-title">Digital Identity Portal</h1>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Smart Bangladesh New Government Services</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <select onchange="updateLang(this.value)" class="text-[10px] font-bold p-1 bg-slate-50 border rounded outline-none">
+                    <option value="en">English</option>
+                    <option value="bn">বাংলা</option>
+                </select>
+                <div class="hidden md:block text-right border-l pl-4">
+                    <p class="text-lg font-black text-[#006a4e]" id="mCount">2,452,904 Members</p>
+                </div>
+                <button onclick="toggleAdmin()" class="bg-slate-900 text-white p-2 rounded-lg"><i class="fa-solid fa-user-gear"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="ticker-wrap"><div class="ticker-move text-xs font-bold text-[#006a4e]" id="l-ticker">জরুরি ঘোষণা: নিবন্ধনের জন্য সঠিক এনআইডি তথ্য ব্যবহার করুন। সফল আবেদনের পর কার্ড আপনার পোস্ট অফিসে পাঠানো হবে।</div></div>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-12 gap-8">
+        
+        <!-- LEFT: REGISTRATION (8 Columns) -->
+        <div class="lg:col-span-8">
+            <div id="main-portal" class="bg-white rounded-[3.5rem] shadow-2xl border p-8 md:p-12 min-h-[700px] flex flex-col justify-center overflow-hidden relative">
+                
+                <!-- SUCCESS VIEW -->
+                <div id="success-view" class="hidden text-center space-y-8">
+                    <div class="bg-[#006a4e] p-10 rounded-[3rem] text-white">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Government_Seal_of_Bangladesh.svg/1200px-Government_Seal_of_Bangladesh.svg.png" class="w-20 mx-auto mb-4 brightness-0 invert">
+                        <h2 class="text-3xl font-black" id="l-success">Registration Successful!</h2>
+                        <p class="text-[10px] font-bold uppercase tracking-widest opacity-80 mt-2">Verified Identity Registry Locked</p>
+                    </div>
+                    <div id="final-card-holder" class="flex flex-col items-center gap-6"></div>
+                </div>
+
+                <!-- FORM -->
+                <div id="form-view">
+                    <h3 class="text-2xl font-black text-[#006a4e] mb-10 flex items-center gap-3"><i class="fa-solid fa-user-plus"></i> <span id="l-fhead">Citizen Registration Form</span></h3>
+                    <form id="regForm" class="space-y-4">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="rName" placeholder="Full Name" required class="p-4 bg-slate-50 border rounded-2xl font-bold outline-none">
+                            <input type="text" id="rNid" placeholder="NID Number" required class="p-4 bg-slate-50 border rounded-2xl font-bold outline-none">
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="rFather" placeholder="Father's Name" required class="p-4 bg-slate-50 border rounded-2xl outline-none">
+                            <input type="text" id="rMother" placeholder="Mother's Name" required class="p-4 bg-slate-50 border rounded-2xl outline-none">
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input type="text" id="rPhone" placeholder="Mobile Number" required class="p-4 bg-slate-50 border rounded-2xl font-bold outline-none">
+                            <input type="text" id="rPost" placeholder="Postal Code" required class="p-4 bg-slate-50 border rounded-2xl outline-none">
+                        </div>
+                        <textarea id="rAddr" placeholder="Full Address" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none h-20"></textarea>
+
+                        <div class="grid md:grid-cols-2 gap-6 pt-4">
+                            <div class="p-6 bg-amber-50 rounded-3xl border-2 border-dashed border-amber-200">
+                                <div class="flex justify-between items-center mb-2">
+                                    <p class="text-[10px] font-black text-amber-700 uppercase">Step 1: Draw Signature</p>
+                                    <button type="button" onclick="clearSig()" class="text-[8px] font-bold text-red-500 underline">CLEAR</button>
+                                </div>
+                                <canvas id="sig-canvas" width="300" height="80" class="w-full bg-white rounded-xl shadow-inner"></canvas>
+                            </div>
+                            <div class="p-6 bg-sky-50 rounded-3xl border-2 border-dashed border-sky-200 text-center">
+                                <p class="text-[10px] font-black text-sky-700 uppercase mb-4">Step 2: Upload Portrait Photo</p>
+                                <input type="file" id="rPhoto" accept="image/*" required class="text-[10px]">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6 pt-4">
+                            <div class="relative"><input type="password" id="p1" placeholder="Password" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none"><i class="fa-solid fa-eye absolute right-6 top-4 text-slate-300 cursor-pointer" onclick="togglePass('p1')"></i></div>
+                            <div class="relative"><input type="password" id="p2" placeholder="Confirm" required class="w-full p-4 bg-slate-50 border rounded-2xl outline-none"><i class="fa-solid fa-eye absolute right-6 top-4 text-slate-300 cursor-pointer" onclick="togglePass('p2')"></i></div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-[#006a4e] to-[#004d39] text-white py-6 rounded-[2.5rem] font-black text-xl uppercase tracking-[0.2em] shadow-2xl border-4 border-yellow-400 active:scale-95 transition-all">
+                            Verify & Register Identity
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: LIVE FEED & PREVIEW (4 Columns) -->
+        <div class="lg:col-span-4 space-y-10">
+            <!-- LIVE LOGISTICS -->
+            <div class="bg-white rounded-[3rem] shadow-xl border overflow-hidden flex flex-col h-[400px]">
+                <div class="bg-[#003326] p-5 text-white text-center"><h3 class="text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3"><span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span> Live Logistics Hub</h3></div>
+                <div id="liveActivity" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 no-scrollbar"></div>
+            </div>
+
+            <!-- PREVIEW (LOCKED) -->
+            <div id="preview-area" class="bg-white p-6 rounded-[3rem] shadow-xl border flex flex-col items-center">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-widest">Real-time Card Preview</p>
+                <div id="card-sync-box" class="flex flex-col items-center gap-6 w-full">
+                    <!-- FRONT -->
+                    <div id="cMain" class="card-box card-front p-8 flex flex-col justify-between shadow-2xl">
+                        <div id="lockOverlay" class="lock-overlay">
+                            <i class="fa-solid fa-lock text-4xl mb-2 text-white/50"></i>
+                            <p class="text-[11px] font-black uppercase tracking-widest">Awaiting Registration</p>
+                        </div>
+                        <div class="leadership-bg"></div>
+                        <div class="flex justify-between items-start relative z-10">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/BNP_Logo.png" class="w-10 brightness-0 invert opacity-40">
+                            <div class="text-right">
+                                <h2 class="text-lg font-bold italic leading-none">Family Card</h2>
+                                <p class="text-[7px] font-bold uppercase opacity-80 mt-1">Smart Bangladesh</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-8 relative z-10">
+                            <div class="flex flex-col items-center">
+                                <img id="uiPhoto" src="https://ui-avatars.com/api/?name=User&background=fff&color=000&size=128" class="user-pic shadow-lg">
+                                <img id="uiSig" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" class="sig-on-card">
+                            </div>
+                            <div class="flex-1 text-[8px] space-y-1.5 uppercase font-bold">
+                                <p class="text-[11px] font-black leading-none" id="uiName">LUNA EMILY</p>
+                                <p class="text-[9px] text-yellow-300" id="uiNid">NID: --</p>
+                                <p><span class="opacity-70 font-bold mr-1">Father:</span> <span id="uiF">--</span></p>
+                                <p><span class="opacity-70 font-bold mr-1">Mother:</span> <span id="uiM">--</span></p>
+                                <div class="gold-chip mt-2 shadow-inner"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end relative z-10"><p class="text-[8px] opacity-80">VALIDITY: 5YRS</p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/UPC-A-barcode.svg/1200px-UPC-A-barcode.svg.png" class="h-10 bg-white p-1 rounded"></div>
+                    </div>
+                    <!-- BACK -->
+                    <div id="cBack" class="card-box card-back p-8 flex flex-col shadow-2xl">
+                        <div class="mag-stripe"></div>
+                        <div class="mt-14 flex justify-between items-end">
+                            <div class="text-[7px] space-y-2 opacity-90 w-2/3">
+                                <p id="timerRow" class="hidden text-amber-500 font-black uppercase text-[9px] animate-pulse">Processing: <span id="daysLeft">30</span> Days Left</p>
+                                <p><strong>REF ID:</strong> <span id="uiRef" class="text-yellow-400 font-bold">PENDING</span></p>
+                                <p><strong>BANK PIN:</strong> <span class="bg-white/10 px-2 rounded tracking-[0.4em]">***</span></p>
+                                <p><strong>POSTAL:</strong> <span id="uiPost" class="font-bold text-emerald-500">--</span></p>
+                                <div class="flex gap-2 pt-2">
+                                    <div class="w-12 h-12 bg-white p-1 rounded"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://bangladesh.gov.bd"></div>
+                                    <div class="w-12 h-12 bg-white p-1 rounded"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com"></div>
+                                </div>
+                            </div>
+                            <div class="text-right flex flex-col justify-end opacity-40"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/UPC-A-barcode.svg/1200px-UPC-A-barcode.svg.png" class="h-10 bg-white p-1 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ADMIN MODAL (HIDDEN) -->
+    <div id="adminPanel" class="fixed inset-0 bg-slate-900/98 backdrop-blur-xl z-[10000] hidden items-center justify-center p-6">
+        <div class="bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden shadow-2xl">
+            <div class="bg-[#003326] p-8 text-white flex justify-between font-black uppercase tracking-widest">
+                <span>Admin Command Center</span>
+                <button onclick="toggleAdmin()"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            <div class="p-10 grid md:grid-cols-2 gap-10 text-slate-800">
+                <div class="space-y-4">
+                    <h4 class="text-xs font-black text-slate-400 uppercase">Citizen Approval</h4>
+                    <div class="p-6 bg-slate-50 border rounded-2xl">
+                        <p class="font-black text-sm" id="admN">Waiting for input...</p>
+                        <button onclick="adminApprove()" class="w-full mt-4 bg-emerald-600 text-white py-4 rounded-xl font-black uppercase text-xs shadow-xl">Approve & Start Timer</button>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-xs font-black text-slate-400 uppercase">System Settings</h4>
+                    <input type="text" id="admBk" value="01700-000000" class="w-full p-4 border rounded-xl font-bold text-sm">
+                    <button onclick="alert('Payments Updated')" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black uppercase text-xs">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CORE DATABASE ENGINE ---
+        const DB = JSON.parse(localStorage.getItem('bd_bnp_registry') || '[]');
+        function setDevice(t) { document.body.className = t === 'laptop' ? '' : 'flex justify-center'; }
+
+        // --- SIGNATURE PAD ---
+        const canvas = document.getElementById('sig-canvas'); const ctx = canvas.getContext('2d'); let draw = false;
+        function getPos(e) { const r = canvas.getBoundingClientRect(); return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top }; }
+        canvas.addEventListener('mousedown', (e) => { draw = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('mousemove', (e) => { if(!draw) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+        window.addEventListener('mouseup', () => draw = false);
+        canvas.addEventListener('touchstart', (e) => { draw = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener('touchmove', (e) => { if(!draw) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); });
+        function clearSig() { ctx.clearRect(0,0,canvas.width,canvas.height); }
+
+        // --- FLOW LOGIC ---
+        document.getElementById('regForm').onsubmit = function(e) {
+            e.preventDefault();
+            const nid = document.getElementById('rNid').value;
+            if(DB.find(u => u.nid === nid)) return alert("ERROR: ALREADY REGISTERED.");
+            document.getElementById('payModal').style.display = 'flex';
+        };
+
+        function confirmPayment() {
+            if(document.getElementById('trxID').value.length < 5) return alert("Enter valid TrxID");
+            document.getElementById('payModal').style.display = 'none';
+            document.getElementById('giftOverlay').style.display = 'flex';
+        }
+
+        function triggerOpen() {
+            document.getElementById('giftBox').classList.add('open');
+            setTimeout(() => { document.getElementById('giftOverlay').style.display = 'none'; finalizeReg(); }, 1500);
+        }
+
+        function finalizeReg() {
+            const name = document.getElementById('rName').value;
+            const nid = document.getElementById('rNid').value;
+            DB.push({name, nid}); localStorage.setItem('bd_bnp_registry', JSON.stringify(DB));
+
+            // Populate Card
+            document.getElementById('uiName').innerText = name;
+            document.getElementById('uiNid').innerText = "NID: " + nid;
+            document.getElementById('uiF').innerText = document.getElementById('rFather').value;
+            document.getElementById('uiM').innerText = document.getElementById('rMother').value;
+            document.getElementById('uiPost').innerText = document.getElementById('rPost').value;
+            document.getElementById('uiRef').innerText = "REF-" + Math.floor(1000 + Math.random()*9000);
+            document.getElementById('uiSig').src = canvas.toDataURL();
+            document.getElementById('admN').innerText = name;
+
+            if(document.getElementById('rPhoto').files[0]) {
+                const reader = new FileReader(); reader.onload = e => document.getElementById('uiPhoto').src = e.target.result; reader.readAsDataURL(document.getElementById('rPhoto').files[0]);
+            }
+
+            // Lock Card
+            document.getElementById('cMain').classList.add('card-locked');
+            document.getElementById('cBack').classList.add('card-locked');
+            document.getElementById('form-view').innerHTML = ""; 
+            document.getElementById('success-view').classList.remove('hidden');
+            document.getElementById('final-card-holder').appendChild(document.getElementById('card-sync-box'));
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // --- ADMIN APPROVAL SIMULATION ---
+        function adminApprove() {
+            document.getElementById('cMain').classList.remove('card-locked');
+            document.getElementById('cBack').classList.remove('card-locked');
+            document.getElementById('lockOverlay').style.display = 'none';
+            document.getElementById('timerRow').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            
+            // Countdown Logic
+            let days = 30;
+            const timer = setInterval(() => {
+                days--;
+                document.getElementById('daysLeft').innerText = days;
+                if(days <= 0) clearInterval(timer);
+            }, 86400000); // Decerement every 24 hours (simulated)
+            
+            alert("Card Approved! Details are now visible. 30-day processing timer started.");
+        }
+
+        // --- LIVE FEED ---
+        const names = ["Abdur Rahim", "Farhana Akter", "Sabbir Hasan", "Kamal Uddin", "Sumaiya Islam"];
+        const hubs = ["Dhaka GPO", "Sylhet Post", "Rajshahi Town", "Comilla Sub-Post"];
+        function addFeed() {
+            const div = document.createElement('div');
+            div.className = "live-row flex items-center justify-between bg-white p-3 rounded-2xl border shadow-sm";
+            div.innerHTML = `<div><p class="text-[11px] font-black">${names[Math.floor(Math.random()*names.length)]}</p><p class="text-[9px] text-slate-400 italic font-bold">${hubs[Math.floor(Math.random()*hubs.length)]}</p></div><span class="px-2 py-1 rounded-full text-[8px] font-black uppercase text-emerald-600 bg-emerald-50">Delivered</span>`;
+            document.getElementById('liveActivity').prepend(div);
+            if(document.getElementById('liveActivity').children.length > 8) document.getElementById('liveActivity').lastChild.remove();
+        }
+        setInterval(addFeed, 3000);
+
+        // --- UTILS ---
+        function copyNum(id) { navigator.clipboard.writeText(document.getElementById(id).innerText); alert("Copied!"); }
+        function togglePass(id) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; }
+        function toggleAdmin() { document.getElementById('adminPanel').classList.toggle('hidden'); document.getElementById('adminPanel').classList.toggle('flex'); }
+        function dragStart(e, id) {
+            const el = document.getElementById(id); const cX = e.type === "touchstart" ? e.touches[0].clientX : e.clientX; const cY = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
+            let sX = cX; let sY = cY; let iX = el.offsetLeft; let iY = el.offsetTop;
+            function move(ev) {
+                const nx = (ev.type === "touchmove" ? ev.touches[0].clientX : ev.clientX); const ny = (ev.type === "touchmove" ? ev.touches[0].clientY : ev.clientY);
+                el.style.left = (iX + (nx - sX)) + "px"; el.style.top = (iY + (ny - sY)) + "px";
+            }
+            document.addEventListener(e.type === "touchstart" ? "touchmove" : "mousemove", move);
+            document.addEventListener(e.type === "touchstart" ? "touchend" : "mouseup", () => {
+                document.removeEventListener("mousemove", move); document.removeEventListener("touchmove", move);
+            }, {once:true});
+        }
+    </script>
+</body>
+</html>
